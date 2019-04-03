@@ -2,18 +2,7 @@ package com.att.kepler.ssot.reader;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.Executor;
-import java.util.function.Supplier;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +27,6 @@ public class FileReaderTask implements Runnable {
 
 	@Override
 	public void run() {
-		logger.info("tasks");
 		try {
 			File folder = new File(outputDir);
 			processPendingFiles(folder);
@@ -53,40 +41,40 @@ public class FileReaderTask implements Runnable {
 				String filePath;
 				for (File file : listOfFiles) {
 					filePath = file.getAbsolutePath();
-					Query query = Query.query(Criteria.where("filePath").is(filePath));
-					boolean exits = fileOperations.exists(query);
-				    logger.info(file.getName() +", query: "+query);
-				    if(!exits) {
-						processFile(file);
-				    }
-				    else {
-				    	logger.info("Exists ");
-				    }
-				    
-						
+					if(file.isFile()) {
+						Query query = Query.query(Criteria.where("filePath").is(filePath));
+					    if(!fileOperations.exists(query)) {
+							processFile(file);
+					    }
+					}
+					else {
+						processPendingFiles(file);
+					} 	
 				}
 		
 		}catch(Exception ex) {
+			logger.error(ex.getMessage());
 			ex.printStackTrace();
 		}
 	}
 
 	private void processFile(File file) {
 		try {
-			logger.info("processing file "+file.getAbsolutePath());
+			logger.info("Processing file "+file.getAbsolutePath());
 			DataReader<Map> reader = readerFactory.getDataReader(file.getAbsolutePath());
 			DataWriter<Map> writer = readerFactory.getDataWritier();
-			logger.info("processing file hasNext");
+			long startTime = System.currentTimeMillis();
 			while (reader.hasNext()) {
-				reader.next(writer);
+				reader.bulkRead(writer, 1000);
 			}
-			logger.info("processing file hasNext");
+			long endTime =  System.currentTimeMillis();
 			FileInfo info = new FileInfo();
 			info.setFilePath(file.getAbsolutePath());
 			info.setStatus("PROCESSED");
+	  		info.setDescription("Output");
 			info.setCreatedTimestamp(DataUtil.currentTimestamp());
 			fileOperations.save(info);
-			logger.info("File processed +");
+			logger.info("File processed , time taken: "+(endTime-startTime)/1000);
 		} catch (Exception e) {
 			logger.error("Failed to process file " + file.getAbsolutePath());
 			e.printStackTrace();

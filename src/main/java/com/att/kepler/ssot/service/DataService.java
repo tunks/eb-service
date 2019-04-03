@@ -17,6 +17,7 @@ import com.att.kepler.ssot.dao.CrudOperations;
 import com.att.kepler.ssot.dao.FileInfoCrudOperations;
 import com.att.kepler.ssot.model.FileInfo;
 import com.att.kepler.ssot.reader.DataReaderFactory;
+import com.att.kepler.ssot.reader.FileExtractorTask;
 import com.att.kepler.ssot.reader.FileReaderTask;
 import com.att.kepler.ssot.reader.ReaderFactory;
 
@@ -52,7 +53,7 @@ public class DataService implements InitializingBean{
 	    CrudOperations<String,FileInfo> fileOperations = new  FileInfoCrudOperations(mongoOperations);
 
 		ReaderFactory readerFactory = new DataReaderFactory(mongoOperations,banCollectionName);
-		//schuduleExecutor.scheduleWithFixedDelay(new FileExtractorTask(inputDir,outputDir,fileOperations), 0, timeInterval, TimeUnit.MILLISECONDS);
+		schuduleExecutor.scheduleWithFixedDelay(new FileExtractorTask(inputDir,outputDir,fileOperations), 0, timeInterval, TimeUnit.MILLISECONDS);
 		schuduleExecutor.scheduleWithFixedDelay(new FileReaderTask(outputDir, fileOperations,readerFactory), 0, timeInterval, TimeUnit.MILLISECONDS);
 	}
 

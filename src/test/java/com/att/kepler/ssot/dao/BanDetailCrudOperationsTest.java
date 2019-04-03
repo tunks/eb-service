@@ -48,12 +48,14 @@ public class BanDetailCrudOperationsTest {
 	@Test
 	public void testSaveAllBulkInsertAndFind() {
 		List<Map<String,Object>> objects = new ArrayList();
-		for(int i =0 ; i< 5; i++) {	
-		  Map<String,Object> object = createObject(String.valueOf(i));	 
-		  System.out.println("??object: "+object);
-		  objects.add(object);
+		int size = 10000;
+		for(int i =0 ; i< size; i++) {	
+		  objects.add(createObject(String.valueOf(i)));
 		}
+		long startTime = System.currentTimeMillis();
 		crudOperations.saveAll(objects);
+		long endTime = System.currentTimeMillis();
+        System.out.println(size+" recoreds, time taken : "+(endTime-startTime)/1000);
 		
 		List<Map> results = new ArrayList();
 		objects.stream().forEach(obj->{

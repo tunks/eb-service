@@ -54,6 +54,7 @@ public class CSVDataReader implements DataReader<Map>{
 	@Override
 	public void next(DataWriter writer) {
 		try {
+			//next();
 			writer.write(next());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -63,10 +64,17 @@ public class CSVDataReader implements DataReader<Map>{
 
 	@Override
 	public void bulkRead(DataWriter writer, int limit) {
-		int count = 0;
-		while(hasNext() && count<limit) {
-			next(writer);
-			count += 1;
+		try {
+			int count = 0;
+			List<Map> items = new ArrayList();
+			while(hasNext() && count<limit) {
+				items.add(next());
+				count += 1;
+			}
+			writer.write(items);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
 		}
 		
 	}

@@ -33,30 +33,11 @@ public class FileExtractorTask implements Runnable{
  
 	@Override
 	public void run() {
-		logger.info("task started");
 		try {
-			/*Supplier<Stream<Path>> paths = () -> Stream.of(Paths.get(inputDir));
-			//logger.info("task paths "+paths.collect(Collectors.toList()));
-			paths.get()//.filter(Files::isRegularFile)
-		           .forEach(f->{
-		        	    logger.info("file: "+f.toFile().getName());
-		        	  FileInfo  info= fileOperations.findBy( Query.query(Criteria.where("filename").is(f.getFileName())));
-		        	  if(info == null) {  
-			             File file = f.toFile();
-		        		 info = new FileInfo();
-		        		 info.setFilePath(file.getAbsolutePath());
-		        		 String outputFileName = DataUtil.createFilePathWithDate(outputDir);
-		        		 File outputPath = new File(outputFileName);
-		        		 FileExtractUtils.extractFile(file, outputPath);
-		        		 logger.info("File: "+file.getAbsolutePath() +" , successfully extracted , output: " + outputPath.getAbsolutePath());
-		        	  }
-		           });
-		           */
 			File folder = new File(inputDir);
 			File[] listOfFiles = folder.listFiles();
 			for (File file : listOfFiles) {
 			    if (file.isFile()) {
-			        logger.info(file.getName());
 			        extractFile(file);
 			    }
 			}
@@ -70,13 +51,13 @@ public class FileExtractorTask implements Runnable{
 	private void extractFile(File file) {
  	    String sourcePath =  file.getAbsolutePath();
 		Query query = Query.query(Criteria.where("filePath").is(sourcePath));
-		FileInfo  info = fileOperations.findBy(query);
-		logger.info("mongo query "+query.toString());
-	  	  if(info == null) {  
-	  		 info = new FileInfo();
+	  	  if(!fileOperations.exists(query)) { 
+		     logger.info("Extracting file: "+file.getName());
+	  		 FileInfo info = new FileInfo();
 	  		 info.setFilePath(sourcePath);
+			 info.setStatus("PROCESSED");
+	  		 info.setDescription("Source");
 	  		 String outputFileName = (sourcePath.endsWith(".zip"))? outputDir: DataUtil.createFilePathWithDate(outputDir);
-	  		 logger.info("Output filename: "+outputFileName);
 	  		 File outputPath = new File(outputFileName);
 	  		 FileExtractUtils.extractFile(file, outputPath);
 	  		 fileOperations.save(info);

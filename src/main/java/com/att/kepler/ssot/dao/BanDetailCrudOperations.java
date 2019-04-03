@@ -1,5 +1,7 @@
 package com.att.kepler.ssot.dao;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,10 +22,20 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import com.att.kepler.ssot.util.DataUtil;
+import com.mongodb.BasicDBObject;
 import com.mongodb.BulkWriteOperation;
 import com.mongodb.DBCollection;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.BulkWriteOptions;
+import com.mongodb.client.model.DeleteOneModel;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.InsertOneModel;
+import com.mongodb.client.model.ReplaceOneModel;
+import com.mongodb.client.model.UpdateOneModel;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.WriteModel;
 
 /***
  * Ban Details Crud Operations
@@ -32,48 +44,51 @@ import com.mongodb.client.MongoCollection;
  */
 
 public class BanDetailCrudOperations implements CrudOperations<String,Map<String,Object>>{
+    private final static UpdateOptions UPDATE_OPTIONS = new UpdateOptions().upsert(true);
+
     private MongoOperations mongoOperations;
 	private String collectionName;
 	private String identifier;
-	
-    
+	private MongoCollection<Document> collection;
+
 	public BanDetailCrudOperations(MongoOperations mongoOperations, String collectionName, String identifier) {
 		super();
 		this.mongoOperations = mongoOperations;
 		this.collectionName = collectionName;
 		this.identifier = identifier;
+		this.collection = mongoOperations.getCollection(collectionName);
 	}
-
+	
 	@Override
 	public void save(Map<String,Object> object) {
 		Object value = object.get(identifier);
-		Query query = new Query(Criteria.where(identifier).is(value));
-		Update update = new Update();
-		update.set(identifier, value);
-	     for(Map.Entry<String, Object> entry: object.entrySet()) {
+		Document toInsert = new Document();
+		 for(Map.Entry<String, Object> entry: object.entrySet()) {
 	    	 if(!entry.getKey().equals(identifier)) {
-	    	   update.setOnInsert(entry.getKey(), entry.getValue());
+	    	   toInsert.append(entry.getKey(), entry.getValue());
 	    	 }
 	     }
-		mongoOperations.upsert(query, update,collectionName);	
+		 Document upsert = new Document().append("$setOnInsert", toInsert)
+									     .append("$set", new Document(identifier, value));
+
+		 collection.updateOne(Filters.eq(identifier, value), upsert, UPDATE_OPTIONS);
 	}
 
 	@Override
 	public void saveAll(List<Map<String,Object>> objects) {
-		BulkOperations ops = mongoOperations.bulkOps(BulkMode.UNORDERED, collectionName);
+		List<WriteModel<Document>> requests = new ArrayList<WriteModel<Document>>();
 		for (Map<String,Object> object : objects) {
 			 Object value = object.get(identifier);
-		     Update update = new Update();
-		     update.set(identifier, value);
+		     Document doc = new Document();
 		     for(Map.Entry<String, Object> entry: object.entrySet()) {
 		    	 if(!entry.getKey().equals(identifier)) {
-		    	   update.setOnInsert(entry.getKey(), entry.getValue());
+		    	   doc.append(entry.getKey(), entry.getValue());
 		    	 }
-		     }
-		     ops.upsert(new Query(Criteria.where(identifier).is(value)), update);
-		   
+		     }	     
+		     requests.add(new UpdateOneModel<Document>(Filters.eq(identifier, value),new Document("$set", doc), UPDATE_OPTIONS));  
 		}
-		ops.execute();  
+		
+		collection.bulkWrite(requests, new BulkWriteOptions().ordered(false));
 	}
 
 	@Override
@@ -90,19 +105,17 @@ public class BanDetailCrudOperations implements CrudOperations<String,Map<String
 
 	@Override
 	public Map find(String id) {
-		return mongoOperations.findOne(new Query(Criteria.where(identifier).is(id)), Map.class,collectionName);
+		return findBy(new Query(Criteria.where(identifier).is(id)));
 	}
 
 	@Override
 	public Map findBy(Query query) {
-		// TODO Auto-generated method stub
-		return null;
+		return mongoOperations.findOne(query, Map.class,collectionName);
 	}
 
 	@Override
 	public boolean exists(Query query) {
-		// TODO Auto-generated method stub
-		return false;
+		return mongoOperations.exists(query, collectionName);
 	}
 
 }

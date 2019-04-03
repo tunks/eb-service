@@ -11,6 +11,7 @@ public class FileInfo {
 	private long fileModifiedDate;
 	private String filePath;
 	private String status; // PROCESSED, PENDING
+	private String description;
 
 	public String getId() {
 		return id;
@@ -52,10 +53,19 @@ public class FileInfo {
 		this.status = status;
 	}
 
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	@Override
 	public String toString() {
 		return "FileInfo [id=" + id + ", createdTimestamp=" + createdTimestamp + ", fileModifiedDate="
-				+ fileModifiedDate + ", filePath=" + filePath + ", status=" + status + "]";
+				+ fileModifiedDate + ", filePath=" + filePath + ", status=" + status + ", description=" + description
+				+ "]";
 	}
 
 }
