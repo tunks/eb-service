@@ -35,7 +35,7 @@ public class FileInfoCrudOperationsTest {
 	public void testSave() {
 		FileInfo info = new FileInfo();
 		info.setId(UUID.randomUUID().toString());
-		info.setFilePath("echoFile1");
+		info.setOriginalFileName("echoFile1");
 		fileInfoOperations.save(info);
 		
 		FileInfo result = fileInfoOperations.find(info.getId());

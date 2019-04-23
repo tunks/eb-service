@@ -109,7 +109,7 @@ public class FileExtractUtils {
     public static void extractGZip(File gzFile, File outDir) {
         try {
         	GzipCompressorInputStream gzip = new GzipCompressorInputStream( new BufferedInputStream(new FileInputStream(gzFile)));
-            IOUtils.copy(gzip, new FileOutputStream(outDir));        	
+            IOUtils.copy(gzip, new FileOutputStream(outDir));  
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

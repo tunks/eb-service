@@ -33,6 +33,7 @@ public class BanDetailCrudOperationsTest {
 	public void setup() {
 		crudOperations = new BanDetailCrudOperations(this.mongoOperations,BAN_COLLECTION,DataUtil.BAN_IDENTIFIER);
 	}
+	
 	@Test
 	public void testSaveAndFind() {
 		String id = UUID.randomUUID().toString();
@@ -55,7 +56,7 @@ public class BanDetailCrudOperationsTest {
 		long startTime = System.currentTimeMillis();
 		crudOperations.saveAll(objects);
 		long endTime = System.currentTimeMillis();
-        System.out.println(size+" recoreds, time taken : "+(endTime-startTime)/1000);
+        System.out.println(size+" records, time taken : "+(endTime-startTime)/1000);
 		
 		List<Map> results = new ArrayList();
 		objects.stream().forEach(obj->{

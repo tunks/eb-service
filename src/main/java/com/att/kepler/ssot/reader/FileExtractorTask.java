@@ -50,16 +50,20 @@ public class FileExtractorTask implements Runnable{
 	
 	private void extractFile(File file) {
  	    String sourcePath =  file.getAbsolutePath();
-		Query query = Query.query(Criteria.where("filePath").is(sourcePath));
+		Query query = Query.query(Criteria.where("originalFileName").is(file.getName()));
 	  	  if(!fileOperations.exists(query)) { 
 		     logger.info("Extracting file: "+file.getName());
 	  		 FileInfo info = new FileInfo();
-	  		 info.setFilePath(sourcePath);
-			 info.setStatus("PROCESSED");
+	  		 info.setOriginalFileName(file.getName());
+	  		 info.setFileModifiedDate(file.lastModified());
+	  		 info.setCreatedTimestamp(DataUtil.currentTimestamp());
+			 info.setStatus("EXTRACTED");
 	  		 info.setDescription("Source");
 	  		 String outputFileName = (sourcePath.endsWith(".zip"))? outputDir: DataUtil.createFilePathWithDate(outputDir);
 	  		 File outputPath = new File(outputFileName);
 	  		 FileExtractUtils.extractFile(file, outputPath);
+	  		 info.setProcessedTimestamp(DataUtil.currentTimestamp());
+	  		 info.setOuputFileName(outputPath.getName());
 	  		 fileOperations.save(info);
 	  		 logger.info("File: "+sourcePath +" , successfully extracted , output: " + outputPath.getAbsolutePath());
 	  	  }

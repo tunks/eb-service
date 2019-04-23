@@ -9,9 +9,11 @@ public class FileInfo {
 	private String id;
 	private long createdTimestamp;
 	private long fileModifiedDate;
-	private String filePath;
-	private String status; // PROCESSED, PENDING
-	private String description;
+	private String originalFileName; // File from original source -- Data lake
+	private String status; // EXTRACTED, PROCESSED, PENDING
+	private String description; //Source , output -> uploaded
+	private String ouputFileName; //Extracted csv file being uploaded
+	private long processedTimestamp;
 
 	public String getId() {
 		return id;
@@ -25,6 +27,7 @@ public class FileInfo {
 		return createdTimestamp;
 	}
 
+	
 	public void setCreatedTimestamp(long createdTimestamp) {
 		this.createdTimestamp = createdTimestamp;
 	}
@@ -35,14 +38,6 @@ public class FileInfo {
 
 	public void setFileModifiedDate(long fileModifiedDate) {
 		this.fileModifiedDate = fileModifiedDate;
-	}
-
-	public String getFilePath() {
-		return filePath;
-	}
-
-	public void setFilePath(String fileName) {
-		this.filePath = fileName;
 	}
 
 	public String getStatus() {
@@ -61,11 +56,34 @@ public class FileInfo {
 		this.description = description;
 	}
 
+	public long getProcessedTimestamp() {
+		return processedTimestamp;
+	}
+
+	public void setProcessedTimestamp(long processedTimestamp) {
+		this.processedTimestamp = processedTimestamp;
+	}
+
+	public String getOriginalFileName() {
+		return originalFileName;
+	}
+
+	public void setOriginalFileName(String originalFileName) {
+		this.originalFileName = originalFileName;
+	}
+
+	public String getOuputFileName() {
+		return ouputFileName;
+	}
+
+	public void setOuputFileName(String ouputFileName) {
+		this.ouputFileName = ouputFileName;
+	}
+
 	@Override
 	public String toString() {
 		return "FileInfo [id=" + id + ", createdTimestamp=" + createdTimestamp + ", fileModifiedDate="
-				+ fileModifiedDate + ", filePath=" + filePath + ", status=" + status + ", description=" + description
-				+ "]";
+				+ fileModifiedDate + ", originalFileName=" + originalFileName + ", status=" + status + ", description="
+				+ description + ", ouputFileName=" + ouputFileName + ", processedTimestamp=" + processedTimestamp + "]";
 	}
-
 }

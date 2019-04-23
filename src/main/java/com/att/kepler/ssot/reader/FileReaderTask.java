@@ -38,11 +38,10 @@ public class FileReaderTask implements Runnable {
 	private void processPendingFiles(File root) {
 		try {
 				File[] listOfFiles = root.listFiles();
-				String filePath;
 				for (File file : listOfFiles) {
-					filePath = file.getAbsolutePath();
 					if(file.isFile()) {
-						Query query = Query.query(Criteria.where("filePath").is(filePath));
+						Query query = Query.query(Criteria.where("ouputFileName").is(file.getName())
+								                          .and("status").in("IN_PROGRESS","PROCESSED"));
 					    if(!fileOperations.exists(query)) {
 							processFile(file);
 					    }
@@ -64,17 +63,26 @@ public class FileReaderTask implements Runnable {
 			DataReader<Map> reader = readerFactory.getDataReader(file.getAbsolutePath());
 			DataWriter<Map> writer = readerFactory.getDataWritier();
 			long startTime = System.currentTimeMillis();
+			//File Operation is pending
+			FileInfo info = new FileInfo();
+			info.setCreatedTimestamp(DataUtil.currentTimestamp());
+			info.setOuputFileName(file.getName());
+			info.setStatus("IN_PROGRESS");
+	  		info.setDescription("CSV file upload in progress");
+	  		info.setFileModifiedDate(file.lastModified());
+			fileOperations.save(info);
+			logger.info("File upload in-progress "+info);
+
 			while (reader.hasNext()) {
 				reader.bulkRead(writer, 1000);
 			}
 			long endTime =  System.currentTimeMillis();
-			FileInfo info = new FileInfo();
-			info.setFilePath(file.getAbsolutePath());
+			//save processed file
 			info.setStatus("PROCESSED");
-	  		info.setDescription("Output");
-			info.setCreatedTimestamp(DataUtil.currentTimestamp());
+	  		info.setDescription("CSV file uploaded");
+	  		info.setProcessedTimestamp(DataUtil.currentTimestamp());
 			fileOperations.save(info);
-			logger.info("File processed , time taken: "+(endTime-startTime)/1000);
+			logger.info("File processed , time taken: "+(endTime-startTime)/1000 + ", info: "+info);
 		} catch (Exception e) {
 			logger.error("Failed to process file " + file.getAbsolutePath());
 			e.printStackTrace();
