@@ -23,12 +23,18 @@ public class FileExtractorTask implements Runnable{
 	private static final Logger logger = LoggerFactory.getLogger(FileExtractorTask.class);
 	private String inputDir ="";
 	private String outputDir = "";
+	private String backupDir = "";
 	private CrudOperations<String,FileInfo> fileOperations;
 	
 	public FileExtractorTask(String inputDir, String outputDir,  CrudOperations<String,FileInfo> fileOperations) {
 		this.inputDir = inputDir;
 		this.outputDir = outputDir;
 		this.fileOperations = fileOperations;
+	}
+	
+	public FileExtractorTask(String inputDir, String outputDir,  String backupDir , CrudOperations<String,FileInfo> fileOperations) {
+		this(inputDir,outputDir,fileOperations);
+		this.backupDir = backupDir;
 	}
  
 	@Override
@@ -48,7 +54,7 @@ public class FileExtractorTask implements Runnable{
 	}
 	
 	
-	private void extractFile(File file) {
+	private void extractFile(File file) throws IOException {
  	    String sourcePath =  file.getAbsolutePath();
 		Query query = Query.query(Criteria.where("originalFileName").is(file.getName()));
 	  	  if(!fileOperations.exists(query)) { 
@@ -65,7 +71,9 @@ public class FileExtractorTask implements Runnable{
 	  		 info.setProcessedTimestamp(DataUtil.currentTimestamp());
 	  		 info.setOuputFileName(outputPath.getName());
 	  		 fileOperations.save(info);
+	  		 
 	  		 logger.info("File: "+sourcePath +" , successfully extracted , output: " + outputPath.getAbsolutePath());
+	  		 DataUtil.moveFile(Paths.get(sourcePath), Paths.get(backupDir,file.getName()));
 	  	  }
 	}
 

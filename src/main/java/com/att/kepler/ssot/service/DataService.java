@@ -40,8 +40,15 @@ public class DataService implements InitializingBean{
 	@Value("${file.input.dir}")
 	private String inputDir;
 	
+	@Value("${file.input.dir.bk}")
+	private String inputDirBackup;
+	
 	@Value("${file.output.dir}")
 	private String outputDir;
+	
+	
+	@Value("${file.output.dir.bk}")
+	private String outputDirBackup;
 	
 	@Value("${ban.collection: ban_detail}")
 	private String banCollectionName;
@@ -53,8 +60,8 @@ public class DataService implements InitializingBean{
 	    CrudOperations<String,FileInfo> fileOperations = new  FileInfoCrudOperations(mongoOperations);
 
 		ReaderFactory readerFactory = new DataReaderFactory(mongoOperations,banCollectionName);
-		schuduleExecutor.scheduleWithFixedDelay(new FileExtractorTask(inputDir,outputDir,fileOperations), 0, timeInterval, TimeUnit.MILLISECONDS);
-		schuduleExecutor.scheduleWithFixedDelay(new FileReaderTask(outputDir, fileOperations,readerFactory), 0, timeInterval, TimeUnit.MILLISECONDS);
+		schuduleExecutor.scheduleWithFixedDelay(new FileExtractorTask(inputDir,outputDir,inputDirBackup,fileOperations), 0, timeInterval, TimeUnit.MILLISECONDS);
+		schuduleExecutor.scheduleWithFixedDelay(new FileReaderTask(outputDir, outputDirBackup,fileOperations,readerFactory), 0, timeInterval, TimeUnit.MILLISECONDS);
 	}
 
 }

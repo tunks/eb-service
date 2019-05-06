@@ -2,6 +2,7 @@ package com.att.kepler.ssot.reader;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -16,14 +17,23 @@ import com.att.kepler.ssot.util.DataUtil;
 public class FileReaderTask implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(FileReaderTask.class);
 	private String outputDir;
+	private String backupDir = "";
 	private CrudOperations<String, FileInfo> fileOperations;
 	private ReaderFactory readerFactory;
 	public FileReaderTask(String outputDir, CrudOperations<String, FileInfo> fileOperations,
-			ReaderFactory readerFactory) {
+		ReaderFactory readerFactory) {
 		this.outputDir = outputDir;
 		this.fileOperations = fileOperations;
 		this.readerFactory = readerFactory;
 	}
+	
+	public FileReaderTask(String outputDir, String backupDir, CrudOperations<String, FileInfo> fileOperations,
+			ReaderFactory readerFactory) {
+			this(outputDir,fileOperations,readerFactory);
+			this.backupDir = backupDir;
+		}
+	
+	
 
 	@Override
 	public void run() {
@@ -83,6 +93,7 @@ public class FileReaderTask implements Runnable {
 	  		info.setProcessedTimestamp(DataUtil.currentTimestamp());
 			fileOperations.save(info);
 			logger.info("File processed , time taken: "+(endTime-startTime)/1000 + ", info: "+info);
+	  		DataUtil.moveFile(Paths.get(file.getAbsolutePath()), Paths.get(backupDir,file.getName()));
 		} catch (Exception e) {
 			logger.error("Failed to process file " + file.getAbsolutePath());
 			e.printStackTrace();
