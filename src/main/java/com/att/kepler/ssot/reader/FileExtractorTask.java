@@ -70,8 +70,12 @@ public class FileExtractorTask implements Runnable{
 	  		 FileExtractUtils.extractFile(file, outputPath);
 	  		 info.setProcessedTimestamp(DataUtil.currentTimestamp());
 	  		 info.setOuputFileName(outputPath.getName());
+	  		 //Set file line count and number of records
+	  		 logger.info("outputPath.getAbsolutePath() "+Paths.get(outputPath.getAbsolutePath(),outputPath.getName()));
+	  		 long lineCount = DataUtil.fileLineCount(outputPath);
+	  		 info.setLineCount(lineCount);
+	  		 info.setNumberOfRecords(lineCount-1);
 	  		 fileOperations.save(info);
-	  		 
 	  		 logger.info("File: "+sourcePath +" , successfully extracted , output: " + outputPath.getAbsolutePath());
 	  		 DataUtil.moveFile(Paths.get(sourcePath), Paths.get(backupDir,file.getName()));
 	  	  }

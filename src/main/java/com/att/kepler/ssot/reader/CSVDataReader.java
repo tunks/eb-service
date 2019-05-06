@@ -21,6 +21,7 @@ public class CSVDataReader implements DataReader<Map>{
 	private CSVParser csvParser ;
 	private Iterator<CSVRecord> csvIterator;
 	private Converter<CSVRecord,Map> converter;
+	private long numberOfRecords  = 0;
 	public CSVDataReader(String filePath) throws IOException {
 		csvParser = new CSVParser(Files.newBufferedReader(Paths.get(filePath)), CSVFormat.DEFAULT
 		                .withFirstRecordAsHeader()
@@ -47,6 +48,7 @@ public class CSVDataReader implements DataReader<Map>{
 		while(hasNext() && count<limit) {
 			records.add(next());
 			count += 1;
+			numberOfRecords +=1;
 		}
 		return records;
 	}
@@ -70,6 +72,7 @@ public class CSVDataReader implements DataReader<Map>{
 			while(hasNext() && count<limit) {
 				items.add(next());
 				count += 1;
+				numberOfRecords +=1;
 			}
 			writer.write(items);
 		}
@@ -109,5 +112,8 @@ public class CSVDataReader implements DataReader<Map>{
 		}
 	}
 
-	
+	@Override
+	public long numberOfRecords() {
+	   return numberOfRecords;
+	}	
 }

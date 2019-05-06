@@ -1,8 +1,10 @@
 package com.att.kepler.ssot.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Calendar;
 import java.util.Map;
@@ -15,7 +17,7 @@ import org.springframework.data.mongodb.core.query.Update;
 public class DataUtil {
 	private static final Logger logger = LoggerFactory.getLogger(DataUtil.class);
 
-	  public final static String RECORD_TIMESTAMP = "receivedTimestamp";
+	  public final static String RECORD_TIMESTAMP = "lastModifiedDateTime";
 	  public final static String BAN_IDENTIFIER = "ban";
 	  public final static String CSV_EXTENSION   = ".csv";
       public static long currentTimestamp() {
@@ -54,5 +56,12 @@ public class DataUtil {
 			logger.error("Failed to move file source path: "+srcPath +" , destPath: "+destPath);
 			throw new IOException(e.getMessage());
 		}
+      }
+      
+      public static long fileLineCount(File file) throws IOException {
+    	   if(file.isFile()) {
+    	      return Files.lines(Paths.get(file.getAbsolutePath())).count();
+    	   }
+    	   return 0;
       }
 }

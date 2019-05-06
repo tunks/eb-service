@@ -16,9 +16,7 @@ public class DataReaderFactory implements ReaderFactory {
 	private MongoTemplate mongoOperations;
 	private String banCollectionName;
     private ExecutorService executor = Executors.newFixedThreadPool(100);
-	
-    private DataWriterImpl writer;
-    
+	    
 	public DataReaderFactory(MongoTemplate mongoOperations, String banCollectionName) {
 		this.mongoOperations = mongoOperations;
 		this.banCollectionName = banCollectionName;
@@ -31,8 +29,7 @@ public class DataReaderFactory implements ReaderFactory {
 
 	@Override
 	public DataWriter getDataWritier() {
-		writer = new DataWriterImpl(new BanDetailCrudOperations(mongoOperations,banCollectionName, DataUtil.BAN_IDENTIFIER),executor);
-		return writer;
+		return new DataWriterImpl(new BanDetailCrudOperations(mongoOperations,banCollectionName, DataUtil.BAN_IDENTIFIER),executor);
 	}
 
 	@Override

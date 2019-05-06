@@ -80,6 +80,7 @@ public class FileReaderTask implements Runnable {
 			info.setStatus("IN_PROGRESS");
 	  		info.setDescription("CSV file upload in progress");
 	  		info.setFileModifiedDate(file.lastModified());
+	  		info.setLineCount(reader.numberOfRecords());
 			fileOperations.save(info);
 			logger.info("File upload in-progress "+info);
 
@@ -91,9 +92,11 @@ public class FileReaderTask implements Runnable {
 			info.setStatus("PROCESSED");
 	  		info.setDescription("CSV file uploaded");
 	  		info.setProcessedTimestamp(DataUtil.currentTimestamp());
+	  		info.setLineCount(reader.numberOfRecords());
+	  		info.setNumberOfRecords(reader.numberOfRecords()-1);
 			fileOperations.save(info);
 			logger.info("File processed , time taken: "+(endTime-startTime)/1000 + ", info: "+info);
-	  		DataUtil.moveFile(Paths.get(file.getAbsolutePath()), Paths.get(backupDir,file.getName()));
+	  		DataUtil.moveFile(Paths.get(file.getAbsolutePath()), Paths.get(backupDir));
 		} catch (Exception e) {
 			logger.error("Failed to process file " + file.getAbsolutePath());
 			e.printStackTrace();

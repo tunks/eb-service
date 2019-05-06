@@ -14,6 +14,8 @@ public class FileInfo {
 	private String description; //Source , output -> uploaded
 	private String ouputFileName; //Extracted csv file being uploaded
 	private long processedTimestamp;
+	private long lineCount;
+	private long numberOfRecords;
 
 	public String getId() {
 		return id;
@@ -78,6 +80,22 @@ public class FileInfo {
 
 	public void setOuputFileName(String ouputFileName) {
 		this.ouputFileName = ouputFileName;
+	}
+
+	public long getLineCount() {
+		return lineCount;
+	}
+
+	public void setLineCount(long lineCount) {
+		this.lineCount = lineCount;
+	}
+
+	public long getNumberOfRecords() {
+		return numberOfRecords;
+	}
+
+	public void setNumberOfRecords(long numberOfRecords) {
+		this.numberOfRecords = numberOfRecords;
 	}
 
 	@Override
