@@ -50,6 +50,9 @@ public class DataService implements InitializingBean{
 	@Value("${file.output.dir.bk}")
 	private String outputDirBackup;
 	
+	@Value("${file.corrupt.dir}")
+	private String corruptDir;
+	
 	@Value("${ban.collection: ban_detail}")
 	private String banCollectionName;
 	
@@ -60,8 +63,10 @@ public class DataService implements InitializingBean{
 	    CrudOperations<String,FileInfo> fileOperations = new  FileInfoCrudOperations(mongoOperations);
 
 		ReaderFactory readerFactory = new DataReaderFactory(mongoOperations,banCollectionName);
-		schuduleExecutor.scheduleWithFixedDelay(new FileExtractorTask(inputDir,outputDir,inputDirBackup,fileOperations), 0, timeInterval, TimeUnit.MILLISECONDS);
-		schuduleExecutor.scheduleWithFixedDelay(new FileReaderTask(outputDir, outputDirBackup,fileOperations,readerFactory), 0, timeInterval, TimeUnit.MILLISECONDS);
+		Runnable extratorTask = new FileExtractorTask(inputDir,outputDir,inputDirBackup,corruptDir,fileOperations);
+		Runnable readerTask = new FileReaderTask(outputDir, outputDirBackup,corruptDir,fileOperations,readerFactory);
+		schuduleExecutor.scheduleWithFixedDelay(extratorTask, 0, timeInterval, TimeUnit.MILLISECONDS);
+		schuduleExecutor.scheduleWithFixedDelay(readerTask, 0, timeInterval, TimeUnit.MILLISECONDS);
 	}
 
 }
