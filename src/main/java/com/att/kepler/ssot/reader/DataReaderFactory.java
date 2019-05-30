@@ -15,7 +15,7 @@ import com.att.kepler.ssot.util.DataUtil;
 public class DataReaderFactory implements ReaderFactory {
 	private MongoTemplate mongoOperations;
 	private String banCollectionName;
-    private ExecutorService executor = Executors.newFixedThreadPool(100);
+    private ExecutorService executor = Executors.newWorkStealingPool(2);
 	    
 	public DataReaderFactory(MongoTemplate mongoOperations, String banCollectionName) {
 		this.mongoOperations = mongoOperations;
@@ -30,10 +30,5 @@ public class DataReaderFactory implements ReaderFactory {
 	@Override
 	public DataWriter getDataWritier() {
 		return new DataWriterImpl(new BanDetailCrudOperations(mongoOperations,banCollectionName, DataUtil.BAN_IDENTIFIER),executor);
-	}
-
-	@Override
-	public Executor getExecutor() {
-		return executor;
 	}
 }

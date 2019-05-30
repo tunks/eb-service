@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,18 +48,18 @@ public class FileExtractorTask implements Runnable {
 
 	@Override
 	public void run() {
-		try {
-			File folder = new File(inputDir);
-			File[] listOfFiles = folder.listFiles();
-			for (File file : listOfFiles) {
-				if (file.isFile()) {
-					extractFile(file);
+			try {
+				File folder = new File(inputDir);
+				File[] listOfFiles = folder.listFiles();
+				for (File file : listOfFiles) {
+					if (file.isFile()) {
+						extractFile(file);
+					}
 				}
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				e.printStackTrace();
 			}
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-			e.printStackTrace();
-		}
 	}
 
 	private void extractFile(File file) throws IOException {
@@ -88,7 +89,7 @@ public class FileExtractorTask implements Runnable {
 						"File: " + sourcePath + " , successfully extracted , output: " + outputPath.getAbsolutePath());
 				DataUtil.moveFile(Paths.get(sourcePath), Paths.get(backupDir, file.getName()));
 			}
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			logger.error("Failed to extract file: " + sourcePath);
 			logger.error(ex.getMessage());
 			DataUtil.moveFile(Paths.get(sourcePath), Paths.get(corruptDir, file.getName()));

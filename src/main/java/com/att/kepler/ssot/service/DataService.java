@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,10 +23,12 @@ import com.att.kepler.ssot.reader.FileReaderTask;
 import com.att.kepler.ssot.reader.ReaderFactory;
 
 @Service("dataService")
-public class DataService implements InitializingBean{
+public class DataService implements InitializingBean, DisposableBean{
 	private static final Logger logger = LoggerFactory.getLogger(DataService.class);
 
-	private ScheduledExecutorService schuduleExecutor;
+	private ScheduledExecutorService schuduleExecutor1;
+	private ScheduledExecutorService schuduleExecutor2;
+
 	
 	@Autowired
 	@Qualifier("mongoTemplate")
@@ -59,14 +62,23 @@ public class DataService implements InitializingBean{
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		logger.info("Starting file scheduled tasks , time interval "+timeInterval);
-		schuduleExecutor = Executors.newScheduledThreadPool(threadPool);
+		schuduleExecutor1 = Executors.newSingleThreadScheduledExecutor();
+		schuduleExecutor2 = Executors.newSingleThreadScheduledExecutor();
+
 	    CrudOperations<String,FileInfo> fileOperations = new  FileInfoCrudOperations(mongoOperations);
 
 		ReaderFactory readerFactory = new DataReaderFactory(mongoOperations,banCollectionName);
 		Runnable extratorTask = new FileExtractorTask(inputDir,outputDir,inputDirBackup,corruptDir,fileOperations);
 		Runnable readerTask = new FileReaderTask(outputDir, outputDirBackup,corruptDir,fileOperations,readerFactory);
-		schuduleExecutor.scheduleWithFixedDelay(extratorTask, 0, timeInterval, TimeUnit.MILLISECONDS);
-		schuduleExecutor.scheduleWithFixedDelay(readerTask, 0, timeInterval, TimeUnit.MILLISECONDS);
+		//schuduleExecutor1.scheduleWithFixedDelay(extratorTask, 0, timeInterval, TimeUnit.MILLISECONDS);
+		schuduleExecutor2.scheduleWithFixedDelay(readerTask, 0, timeInterval, TimeUnit.MILLISECONDS);
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		logger.info("Terminating executor schedulers");
+		schuduleExecutor1.shutdown();
+		schuduleExecutor2.shutdown();	
 	}
 
 }

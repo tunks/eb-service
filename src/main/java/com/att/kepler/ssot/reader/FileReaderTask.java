@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ public class FileReaderTask implements Runnable {
 	private String corruptDir = "";
 	private CrudOperations<String, FileInfo> fileOperations;
 	private ReaderFactory readerFactory;
+    private static final int DEFAULT_BATCH_LIMIT = 1000;
 
 	public FileReaderTask(String outputDir, CrudOperations<String, FileInfo> fileOperations,
 			ReaderFactory readerFactory) {
@@ -44,11 +46,13 @@ public class FileReaderTask implements Runnable {
 	@Override
 	public void run() {
 		try {
+			
 			File folder = new File(outputDir);
 			processPendingFiles(folder);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}	
 	}
 
 	private void processPendingFiles(File root) {
@@ -90,7 +94,7 @@ public class FileReaderTask implements Runnable {
 			logger.info("File upload in-progress " + info);
 
 			while (reader.hasNext()) {
-				reader.bulkRead(writer, 1000);
+				reader.bulkRead(writer, DEFAULT_BATCH_LIMIT);
 			}
 			long endTime = System.currentTimeMillis();
 			// save processed file
@@ -102,12 +106,12 @@ public class FileReaderTask implements Runnable {
 			fileOperations.save(info);
 			logger.info("File processed , time taken: " + (endTime - startTime) / 1000 + ", info: " + info);
 			DataUtil.moveFile(Paths.get(file.getAbsolutePath()), Paths.get(backupDir, file.getName()));
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			String path = file.getAbsolutePath();
 			logger.error("Failed to read file: " + path);
 			logger.error(ex.getMessage());
 			DataUtil.moveFile(Paths.get(path), Paths.get(corruptDir, file.getName()));
-			logger.warn("Bab or corrupted file moved to : " + corruptDir);
+			logger.warn("Bad/corrupted file moved to : " + corruptDir);
 		}
 	}
 

@@ -14,10 +14,11 @@ import com.att.kepler.ssot.dao.CrudOperations;
 
 public class DataWriterImpl implements DataWriter<Map<String,Object>>{
 	private static final Logger logger = LoggerFactory.getLogger(DataWriterImpl.class);
-
     private CrudOperations<String,Map<String,Object>> dataOperations;
     private ExecutorService executor;
-
+    public DataWriterImpl(CrudOperations<String,Map<String,Object>>  dataOperations) {
+		this.dataOperations = dataOperations;
+	}
 	public DataWriterImpl(CrudOperations<String,Map<String,Object>>  dataOperations, ExecutorService executor) {
 		this.dataOperations = dataOperations;
 		this.executor  = executor;
@@ -30,6 +31,7 @@ public class DataWriterImpl implements DataWriter<Map<String,Object>>{
 
 	@Override
 	public void write(List<Map<String,Object>> objects) throws Exception {
+		//dataOperations.saveAll(objects);		
 		executor.execute(new BatchDataWriterTask(objects));	
 	}
 	

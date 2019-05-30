@@ -1,6 +1,9 @@
 package com.att.kepler.ssot.reader;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -23,10 +26,14 @@ public class CSVDataReader implements DataReader<Map>{
 	private Converter<CSVRecord,Map> converter;
 	private long numberOfRecords  = 0;
 	public CSVDataReader(String filePath) throws IOException {
-		csvParser = new CSVParser(Files.newBufferedReader(Paths.get(filePath)), CSVFormat.DEFAULT
+
+		csvParser = CSVParser.parse(Paths.get(filePath), StandardCharsets.UTF_8,  
+				                  CSVFormat.EXCEL.withFirstRecordAsHeader());
+		/*csvParser = new CSVParser(Files.newBufferedReader(Paths.get(filePath)), CSVFormat.RFC4180
 		                .withFirstRecordAsHeader()
 		                .withIgnoreHeaderCase()
 		                .withTrim());
+		                */
 		csvIterator = csvParser.iterator();
 		this.converter = new MapConverter(csvParser.getHeaderMap(), DataUtil.currentTimestamp());
 	}

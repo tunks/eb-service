@@ -8,6 +8,8 @@ import java.util.Optional;
 
 import org.bson.BasicBSONObject;
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.BulkOperations.BulkMode;
@@ -21,6 +23,8 @@ import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+
+import com.att.kepler.ssot.reader.FileReaderTask;
 import com.att.kepler.ssot.util.DataUtil;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BulkWriteOperation;
@@ -45,6 +49,7 @@ import com.mongodb.client.model.WriteModel;
 
 public class BanDetailCrudOperations implements CrudOperations<String,Map<String,Object>>{
     private final static UpdateOptions UPDATE_OPTIONS = new UpdateOptions().upsert(true);
+	private static final Logger logger = LoggerFactory.getLogger(BanDetailCrudOperations.class);
 
     private MongoOperations mongoOperations;
 	private String collectionName;
@@ -76,6 +81,7 @@ public class BanDetailCrudOperations implements CrudOperations<String,Map<String
 
 	@Override
 	public void saveAll(List<Map<String,Object>> objects) {
+		try {
 		List<WriteModel<Document>> requests = new ArrayList<WriteModel<Document>>();
 		for (Map<String,Object> object : objects) {
 			 Object value = object.get(identifier);
@@ -89,6 +95,10 @@ public class BanDetailCrudOperations implements CrudOperations<String,Map<String
 		}
 		
 		collection.bulkWrite(requests, new BulkWriteOptions().ordered(false));
+		}
+		catch(Exception ex) {
+			logger.error("Bulk write failed: "+ex.getMessage()); 
+		}
 	}
 
 	@Override

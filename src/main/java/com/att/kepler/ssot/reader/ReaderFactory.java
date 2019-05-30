@@ -9,6 +9,4 @@ public interface ReaderFactory {
 	 public DataReader getDataReader(String filePath) throws IOException;
 	 
 	 public DataWriter getDataWritier();
-	 
-	 public Executor getExecutor();
 }
