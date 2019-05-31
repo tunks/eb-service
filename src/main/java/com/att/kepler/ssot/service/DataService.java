@@ -76,7 +76,7 @@ public class DataService implements InitializingBean, DisposableBean{
 	    workerPool = readerFactory.dataWriterWorkerPool(numberOfWorkers);
 		Runnable extratorTask = new FileExtractorTask(inputDir,outputDir,inputDirBackup,corruptDir,fileOperations);
 		Runnable readerTask = new FileReaderTask(outputDir, outputDirBackup,corruptDir,fileOperations,readerFactory);
-		//schuduleExecutor1.scheduleWithFixedDelay(extratorTask, 0, timeInterval, TimeUnit.MILLISECONDS);
+		schuduleExecutor1.scheduleWithFixedDelay(extratorTask, 0, timeInterval, TimeUnit.MILLISECONDS);
 		schuduleExecutor2.scheduleWithFixedDelay(readerTask, 0, timeInterval, TimeUnit.MILLISECONDS);
 	}
 
