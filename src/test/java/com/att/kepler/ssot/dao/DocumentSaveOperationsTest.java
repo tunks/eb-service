@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,62 +16,64 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.att.kepler.ssot.util.DataUtil;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class BanDetailCrudOperationsTest {
+public class DocumentSaveOperationsTest {
 	@Autowired
 	@Qualifier("mongoTemplate")
     private MongoTemplate mongoOperations;
 	
 	private String BAN_COLLECTION  ="ban_test";
-	private BanDetailCrudOperations crudOperations;
+	private SaveOperations<Document> saveOperations;
 	
 	@Before
 	public void setup() {
-		crudOperations = new BanDetailCrudOperations(this.mongoOperations,BAN_COLLECTION,DataUtil.BAN_IDENTIFIER);
+		saveOperations = new DocumentSaveOperations(this.mongoOperations,BAN_COLLECTION,DataUtil.BAN_IDENTIFIER);
 	}
 	
 	@Test
 	public void testSaveAndFind() {
 		String id = UUID.randomUUID().toString();
-		Map<String,Object> object = new HashMap();
-		object.put(DataUtil.BAN_IDENTIFIER, id);
-		object.put("description", "testing echo ban");
-		crudOperations.save(object);
-		
-		Map result = crudOperations.find(id);
+		Document doc = new Document();
+		doc.put(DataUtil.BAN_IDENTIFIER, id);
+		doc.put("description", "testing echo ban");
+		saveOperations.save(doc);
+		Query query = new Query(Criteria.where(DataUtil.BAN_IDENTIFIER).is(id));
+		Map result = mongoOperations.findOne(query, Map.class, BAN_COLLECTION);
 		assertNotNull(result);
 	}
 
 	@Test
 	public void testSaveAllBulkInsertAndFind() {
-		List<Map<String,Object>> objects = new ArrayList();
+		List<Document> docs = new ArrayList();
 		int size = 10000;
 		for(int i =0 ; i< size; i++) {	
-		  objects.add(createObject(String.valueOf(i)));
+		  docs.add(createObject(String.valueOf(i)));
 		}
 		long startTime = System.currentTimeMillis();
-		crudOperations.saveAll(objects);
+		saveOperations.saveAll(docs);
 		long endTime = System.currentTimeMillis();
         System.out.println(size+" records, time taken : "+(endTime-startTime)/1000);
 		
-		List<Map> results = new ArrayList();
-		objects.stream().forEach(obj->{
+		docs.stream().forEach(obj->{
 			String id = (String)obj.get(DataUtil.BAN_IDENTIFIER);
-			Map result = crudOperations.find(id);
+			Query query = new Query(Criteria.where(DataUtil.BAN_IDENTIFIER).is(id));
+			Map result = mongoOperations.findOne(query, Map.class, BAN_COLLECTION);
 			assertNotNull(result);
 		});
 	}
 	
-	private Map createObject(String id) {
-		Map<String,String> object = new HashMap();
+	private Document createObject(String id) {
+		Map<String,Object> object = new HashMap();
 		object.put(DataUtil.BAN_IDENTIFIER, id);
 		object.put("description", "testing echo ban");
-		return object;
+		return new Document(object);
 	}
 
 }

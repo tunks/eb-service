@@ -3,9 +3,13 @@ package com.att.kepler.ssot.reader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -46,7 +50,6 @@ public class FileReaderTask implements Runnable {
 	@Override
 	public void run() {
 		try {
-			
 			File folder = new File(outputDir);
 			processPendingFiles(folder);
 			
@@ -79,8 +82,8 @@ public class FileReaderTask implements Runnable {
 	private void processFile(File file) throws IOException {
 		try {
 			logger.info("Processing file " + file.getAbsolutePath());
-			DataReader<Map> reader = readerFactory.getDataReader(file.getAbsolutePath());
-			DataWriter<Map> writer = readerFactory.getDataWritier();
+			DataReader<Document> reader = readerFactory.getDataReader(file.getAbsolutePath());
+			DataBufferWriter<Document> writer = readerFactory.getDataWritier();
 			long startTime = System.currentTimeMillis();
 			// File Operation is pending
 			FileInfo info = new FileInfo();
@@ -91,11 +94,14 @@ public class FileReaderTask implements Runnable {
 			info.setFileModifiedDate(file.lastModified());
 			info.setLineCount(reader.numberOfRecords());
 			fileOperations.save(info);
+			//activate workers
+			readerFactory.dataWriterWorkerPool().togglePause(false);
 			logger.info("File upload in-progress " + info);
-
 			while (reader.hasNext()) {
 				reader.bulkRead(writer, DEFAULT_BATCH_LIMIT);
 			}
+			//Deactivate workers
+			readerFactory.dataWriterWorkerPool().togglePause(true);
 			long endTime = System.currentTimeMillis();
 			// save processed file
 			info.setStatus("PROCESSED");

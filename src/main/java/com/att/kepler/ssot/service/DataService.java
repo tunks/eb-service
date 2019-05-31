@@ -21,6 +21,8 @@ import com.att.kepler.ssot.reader.DataReaderFactory;
 import com.att.kepler.ssot.reader.FileExtractorTask;
 import com.att.kepler.ssot.reader.FileReaderTask;
 import com.att.kepler.ssot.reader.ReaderFactory;
+import com.att.kepler.ssot.workers.Worker;
+import com.att.kepler.ssot.workers.WorkerPool;
 
 @Service("dataService")
 public class DataService implements InitializingBean, DisposableBean{
@@ -59,15 +61,19 @@ public class DataService implements InitializingBean, DisposableBean{
 	@Value("${ban.collection: ban_detail}")
 	private String banCollectionName;
 	
+	@Value("${worker.pool.size: 50}")
+	private int numberOfWorkers;
+	
+	private ReaderFactory readerFactory;
+	private WorkerPool<String, Worker> workerPool;
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		logger.info("Starting file scheduled tasks , time interval "+timeInterval);
+		logger.info("Starting file scheduled tasks , time interval "+timeInterval +"");
 		schuduleExecutor1 = Executors.newSingleThreadScheduledExecutor();
 		schuduleExecutor2 = Executors.newSingleThreadScheduledExecutor();
-
 	    CrudOperations<String,FileInfo> fileOperations = new  FileInfoCrudOperations(mongoOperations);
-
-		ReaderFactory readerFactory = new DataReaderFactory(mongoOperations,banCollectionName);
+	    readerFactory = new DataReaderFactory(mongoOperations,banCollectionName);
+	    workerPool = readerFactory.dataWriterWorkerPool(numberOfWorkers);
 		Runnable extratorTask = new FileExtractorTask(inputDir,outputDir,inputDirBackup,corruptDir,fileOperations);
 		Runnable readerTask = new FileReaderTask(outputDir, outputDirBackup,corruptDir,fileOperations,readerFactory);
 		//schuduleExecutor1.scheduleWithFixedDelay(extratorTask, 0, timeInterval, TimeUnit.MILLISECONDS);
