@@ -59,6 +59,9 @@ public class WorkerImpl implements Worker{
 					if (docs != null) {
 						dataOperations.saveAll(docs);
 					} 
+					else {
+						TimeUnit.MILLISECONDS.sleep(100);
+					}
    
 				} catch (Exception ex) {
 					ex.printStackTrace();

@@ -95,13 +95,13 @@ public class FileReaderTask implements Runnable {
 			info.setLineCount(reader.numberOfRecords());
 			fileOperations.save(info);
 			//activate workers
-			readerFactory.dataWriterWorkerPool().togglePause(false);
+			//readerFactory.dataWriterWorkerPool().togglePause(false);
 			logger.info("File upload in-progress " + info);
 			while (reader.hasNext()) {
 				reader.bulkRead(writer, DEFAULT_BATCH_LIMIT);
 			}
 			//Deactivate workers
-			readerFactory.dataWriterWorkerPool().togglePause(true);
+			//readerFactory.dataWriterWorkerPool().togglePause(true);
 			long endTime = System.currentTimeMillis();
 			// save processed file
 			info.setStatus("PROCESSED");

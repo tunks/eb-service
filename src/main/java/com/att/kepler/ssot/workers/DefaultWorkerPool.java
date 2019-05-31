@@ -168,8 +168,8 @@ public class DefaultWorkerPool implements WorkerPool<String, Worker> {
 		this.workers.values().stream().forEach(worker->{
 			worker.togglePause(paused);
 		});
-	   String msg = String.format("%s pool workers: %s",((paused)? "Deactivated": "Activated"),getActiveWorkerCount());
-       logger.info(msg);
+	    String msg = String.format("%s pool workers: %s",((paused)? "Deactivated": "Activated"),getActiveWorkerCount());
+        logger.info(msg);
 	}
 
 }
