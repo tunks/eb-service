@@ -86,7 +86,7 @@ public class CSVDataReader implements DataReader<Document>{
 			logger.debug("after bulk read: "+items.size());
 		}
 		catch(Exception ex) {
-			ex.printStackTrace();
+			logger.error("Error parsing csv : "+ex.getMessage());
 		}
 	}
 	

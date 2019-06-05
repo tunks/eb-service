@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.att.kepler.ssot</groupId>
 	<artifactId>eco-ban-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.4-SNAPSHOT</version>
 	<name>eco-ban-service</name>
 	<description>Demo project for Spring Boot</description>
 

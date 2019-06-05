@@ -30,7 +30,7 @@ public class DataReaderFactory implements ReaderFactory {
 
 	@Override
 	public DataReader getDataReader(String filePath) throws IOException {
-		return new CSVDataReader(filePath);
+		return new CSVDataReader2(filePath);
 	}
 
 	@Override

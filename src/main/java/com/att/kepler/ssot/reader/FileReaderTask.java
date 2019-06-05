@@ -73,7 +73,7 @@ public class FileReaderTask implements Runnable {
 				}
 			}
 
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			logger.error(ex.getMessage());
 			ex.printStackTrace();
 		}
